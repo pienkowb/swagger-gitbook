@@ -10,30 +10,38 @@ from helpers import *
 DEFAULT_PARAMETER_TYPE = 'object'
 DEFAULT_HTTP_CODE = 200
 
+EXIT_FAILURE = 1
+
 
 if len(sys.argv) != 2:
-  print(f'usage: {sys.argv[0]} swagger.json')
-  exit(1)
+  print(f"usage: {sys.argv[0]} swagger_file")
+  exit(EXIT_FAILURE)
 
 with open(sys.argv[1]) as file:
   data = json.load(file)
 
   for path, endpoints in data['paths'].items():
     for method, endpoint in endpoints.items():
-      host = data["schemes"][0] + '://' + data["host"]
-      full_path = data['basePath'] + path
+      host = data['schemes'][0] + "://" + data['host']
+      base_path = data.get('basePath')
 
-      with directive('api-method', method = method, host = host, path = full_path):
+      if base_path:
+        path = base_path + path
+
+      with directive('api-method', method = method, host = host, path = path):
         with directive('api-method-summary'):
           print(endpoint['summary'])
 
-        with directive('api-method-description'):
-          print(endpoint['description'])
+        if 'description' in endpoint:
+          with directive('api-method-description'):
+            print(endpoint['description'])
 
         with directive('api-method-spec'):
           with directive('api-method-request'):
             for type in ['path', 'header', 'query', 'formData', 'body']:
-              parameters = [p for p in endpoint['parameters'] if p['in'] == type]
+              if 'parameters' not in endpoint: continue
+
+              parameters = list(filter(of_type(type), endpoint['parameters']))
 
               if len(parameters) == 0: continue
 
@@ -45,7 +53,7 @@ with open(sys.argv[1]) as file:
                   attributes = {
                     'name': parameter['name'],
                     'type': parameter.get('type', schema_type or default_type),
-                    'required': parameter['required']
+                    'required': parameter.get('required' , False)
                   }
 
                   with directive('api-method-parameter', **attributes):
