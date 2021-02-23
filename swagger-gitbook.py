@@ -20,6 +20,16 @@ if len(sys.argv) != 2:
 with open(sys.argv[1]) as file:
   data = json.load(file)
 
+  title = data['info']['title']
+  description = data['info'].get('description')
+
+  if description:
+    print("---")
+    print(f"description: {description}")
+    print("---", end = "\n\n")
+
+  print(f"# {title}", end = "\n\n")
+
   for path, endpoints in data['paths'].items():
     for method, endpoint in endpoints.items():
       servers = data.get('servers', [])
