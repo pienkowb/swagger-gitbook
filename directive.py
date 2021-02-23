@@ -23,5 +23,7 @@ def _format_value(value):
     return f'"{value}"'
   elif isinstance(value, bool):
     return f"{value}".lower()
+  elif value is None:
+    return '""'
   else:
     return f"{value}"

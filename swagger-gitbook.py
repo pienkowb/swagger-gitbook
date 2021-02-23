@@ -22,15 +22,12 @@ with open(sys.argv[1]) as file:
 
   for path, endpoints in data['paths'].items():
     for method, endpoint in endpoints.items():
-      host = data['schemes'][0] + "://" + data['host']
-      base_path = data.get('basePath')
-
-      if base_path:
-        path = base_path + path
+      servers = data.get('servers', [])
+      host = servers[0]['url'] if len(servers) > 0 else ""
 
       with directive('api-method', method = method, host = host, path = path):
         with directive('api-method-summary'):
-          print(endpoint['summary'])
+          print(endpoint.get('summary', path))
 
         if 'description' in endpoint:
           with directive('api-method-description'):
