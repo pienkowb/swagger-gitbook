@@ -10,11 +10,13 @@ from helpers import *
 DEFAULT_PARAMETER_TYPE = 'object'
 DEFAULT_HTTP_CODE = 200
 
+INDENTATION_LEVEL = 2
+
 EXIT_FAILURE = 1
 
 
 if len(sys.argv) != 2:
-  print(f"usage: {sys.argv[0]} swagger_file")
+  print(f"usage: {sys.argv[0]} openapi_file")
   exit(EXIT_FAILURE)
 
 with open(sys.argv[1]) as file:
@@ -77,3 +79,11 @@ with open(sys.argv[1]) as file:
               with directive('api-method-response-example', httpCode = code):
                 with directive('api-method-response-example-description'):
                   print(response['description'])
+
+                media_type, content = list(response['content'].items())[0]
+                format = media_type.split('/')[-1]
+
+                if 'example' in content:
+                  print(f"```{format}")
+                  print(json.dumps(content['example'], indent = INDENTATION_LEVEL))
+                  print("```")
